@@ -9,7 +9,7 @@ function Login(props) {
     const { setIsAuthenticated, setUserRole } = useUser();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [name, setName] = useState("");
+    const [username, setName] = useState("");
     const [otp, setOtp] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLogin, setIsLogin] = useState(true);
@@ -51,7 +51,7 @@ function Login(props) {
     const handleRegister = async () => {
         try {
             const response = await axios.post("http://localhost:3000/api/register", {
-                name,
+                username,
                 email,
                 password,
             });
@@ -104,8 +104,8 @@ function Login(props) {
                             <i className="fa fa-user-o" aria-hidden="true"></i>
                             <input
                                 type="text"
-                                name="name"
-                                value={name}
+                                name="username"
+                                value={username}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder=" Enter your name"
                             />
