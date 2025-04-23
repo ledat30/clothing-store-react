@@ -64,7 +64,7 @@ function Product(ropps) {
         const selectedPage = data.selected + 1;
         fetchAll(selectedPage, searchQuery);
     };
-    const onHideModal= async () => {
+    const onHideModal = async () => {
         setIsShowModal(false);
         await fetchAll();
         setDataModal({});
@@ -83,7 +83,7 @@ function Product(ropps) {
             contentHtml: product.contentHtml,
             contentMarkdown: product.contentMarkdown,
             category_id: product.category_id,
-            variants: product.variants,
+            variants: product.ProductAttributes,
         });
         setActionModal("UPDATE");
         setIsShowModal(true);

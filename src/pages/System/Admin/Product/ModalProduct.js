@@ -1,6 +1,6 @@
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { useState ,useEffect} from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import MarkdownIt from "markdown-it";
@@ -12,44 +12,90 @@ const mdParser = new MarkdownIt();
 const ModalProduct = (props) => {
     const defaultData = {
         name: "",
-        description:"",
-        image:"",
-        price:"",
-        contentHtml:"",
-        contentMarkdown:"",
-        category_id:"",
-        variants:"",
+        description: "",
+        image: "",
+        price: "",
+        contentHtml: "",
+        contentMarkdown: "",
+        category_id: "",
     };
+
+    const [variants, setVariants] = useState([
+        { color: "", size: "", quantity: "" },
+    ]);
 
     const validInputsDefault = {
         name: true,
-        description:true,
-        image:true,
-        price:true,
-        contentHtml:true,
-        contentMarkdown:true,
-        category_id:true,
-        variants:true,
+        description: true,
+        image: true,
+        price: true,
+        contentHtml: true,
+        contentMarkdown: true,
+        category_id: true,
     };
 
     const [productData, setProductData] = useState(defaultData);
     const [imageBase64, setImageBase64] = useState(null);
+    console.log(imageBase64);
+    
     const [validInputs, setValidInputs] = useState(validInputsDefault);
+    const [category, setCategory] = useState([]);
 
     useEffect(() => {
+        fetchCategory();
+    }, []);
+
+    const fetchCategory = async () => {
+        try {
+            const rs = await axios.get("http://localhost:3000/api/category");
+
+            if (rs.data.EC === '0') {
+                setCategory(rs.data.DT);
+            } else {
+                console.error(rs.data.EM);
+            }
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    };
+
+    const handleVariantChange = (index, field, value) => {
+        const updatedVariants = [...variants];
+        updatedVariants[index][field] = value;
+        setVariants(updatedVariants);
+    };
+
+    const handleAddVariant = () => {
+        setVariants([...variants, { color: "", size: "", quantity: "" }]);
+    };
+
+    const handleRemoveVariant = (index) => {
+        if (variants.length > 1) {
+            const updatedVariants = variants.filter((_, i) => i !== index);
+            setVariants(updatedVariants);
+        } else {
+            toast.warn("Phải có ít nhất một biến thể!");
+        }
+    };
+
+    useEffect(() => {
+        console.log(props.dataModal);
+
         if (props.action === "UPDATE" && props.dataModal) {
             setProductData({
                 name: props.dataModal.name || "",
                 description: props.dataModal.description || "",
-                image: props.dataModal.image || "",
                 price: props.dataModal.price || "",
                 contentHtml: props.dataModal.contentHtml || "",
                 contentMarkdown: props.dataModal.contentMarkdown || "",
                 category_id: props.dataModal.category_id || "",
-                variants: props.dataModal.variants || "",
             });
-            if (props.dataModal.image) {
-                setImageBase64(props.dataModal.image);
+            setVariants(props.dataModal.variants || []);
+            if (props.dataModal.image?.data) {
+                const base64String = new TextDecoder().decode(new Uint8Array(props.dataModal.image.data));
+                setImageBase64(base64String);
+            } else {
+                setImageBase64(null);
             }
         } else {
             setProductData(defaultData);
@@ -92,10 +138,10 @@ const ModalProduct = (props) => {
                 break;
             }
         }
-         if (!imageBase64) {
-                    toast.error("Please upload an image!");
-                    isValid = false;
-                }
+        if (!imageBase64) {
+            toast.error("Please upload an image!");
+            isValid = false;
+        }
 
         return isValid;
     };
@@ -104,13 +150,13 @@ const ModalProduct = (props) => {
         if (checkValidInput()) {
             const news = {
                 name: productData.name,
-                description:productData.description,
+                description: productData.description,
                 image: imageBase64,
-                price:productData.price,
-                contentHtml:productData.contentHtml,
-                contentMarkdown:productData.contentMarkdown,
-                category_id:productData.category_id,
-                variants:productData.variants,
+                price: productData.price,
+                contentHtml: productData.contentHtml,
+                contentMarkdown: productData.contentMarkdown,
+                category_id: productData.category_id,
+                variants,
             };
 
             try {
@@ -150,7 +196,7 @@ const ModalProduct = (props) => {
             onHide={handleCloseModal}
         >
             <Modal.Header closeButton>
-            <Modal.Title>
+                <Modal.Title>
                     {props.action === "CREATE" ? "Create New Product" : "Update Product"}
                 </Modal.Title>
             </Modal.Header>
@@ -158,7 +204,7 @@ const ModalProduct = (props) => {
                 <div className="content-body row">
                     <div className="col-12 col-sm-6 from-group">
                         <label>
-                            Category name (<span style={{ color: "red" }}>*</span>)
+                            Product name (<span style={{ color: "red" }}>*</span>)
                         </label>
                         <input
                             className={`form-control mt-1 ${validInputs.name ? "" : "is-invalid"}`}
@@ -175,7 +221,7 @@ const ModalProduct = (props) => {
                             className={`form-control mt-1 ${validInputs.price ? "" : "is-invalid"}`}
                             type="text"
                             value={productData.price}
-                            onChange={(e) => setProductData({ ...productData, name: e.target.value })}
+                            onChange={(e) => setProductData({ ...productData, price: e.target.value })}
                         />
                     </div>
                     <div className="col-12 col-sm-6 pt-3 from-group">
@@ -189,17 +235,24 @@ const ModalProduct = (props) => {
                             onChange={(e) => setProductData({ ...productData, description: e.target.value })}
                         />
                     </div>
-                    <div className="col-12 col-sm-6 from-group mt-3">
-                        <label>Upload Image (<span style={{ color: "red" }}>*</span>)</label>
-                        <input
-                            className="form-control mt-1"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                        />
-                        {imageBase64 && (
-                            <img src={imageBase64} alt="Preview" className="img-thumbnail mt-2" style={{ maxHeight: "100px" }} />
-                        )}
+                    <div className="col-12 col-sm-6 pt-3 from-group">
+                        <label>
+                            Danh mục sản phẩm (<span style={{ color: "red" }}>*</span>)
+                        </label>
+                        <select
+                            className={`form-control mt-1 ${validInputs.category_id ? "" : "is-invalid"}`}
+                            value={productData.category_id}
+                            onChange={(e) =>
+                                setProductData({ ...productData, category_id: e.target.value })
+                            }
+                        >
+                            <option value="">-- Chọn danh mục --</option>
+                            {category.map((item) => (
+                                <option key={item.id} value={item.id}>
+                                    {item.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className="col-12 form-group mt-3">
                         <label>
@@ -217,6 +270,69 @@ const ModalProduct = (props) => {
                             <div className="invalid-feedback d-block">
                                 Content is required
                             </div>
+                        )}
+                    </div>
+
+                    <div className="col-12 mt-4">
+                        <label>Variants:</label>
+                        {variants.map((variant, index) => (
+                            <div className="row mb-2" key={index}>
+                                <div className="col-sm-3">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Color"
+                                        value={variant.color}
+                                        onChange={(e) => handleVariantChange(index, "color", e.target.value)}
+                                    />
+                                </div>
+                                <div className="col-sm-3">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Size"
+                                        value={variant.size}
+                                        onChange={(e) => handleVariantChange(index, "size", e.target.value)}
+                                    />
+                                </div>
+                                <div className="col-sm-3">
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        placeholder="Quantity"
+                                        value={variant.quantity}
+                                        onChange={(e) => handleVariantChange(index, "quantity", e.target.value)}
+                                    />
+                                </div>
+                                <div className="col-sm-3 d-flex align-items-center">
+                                    <button
+                                        className="btn btn-danger me-2"
+                                        onClick={() => handleRemoveVariant(index)}
+                                    >
+                                        Remove
+                                    </button>
+                                    {index === variants.length - 1 && (
+                                        <button
+                                            className="btn btn-success"
+                                            onClick={handleAddVariant}
+                                        >
+                                            Add
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="col-12 col-sm-6 from-group mt-3">
+                        <label>Upload Image (<span style={{ color: "red" }}>*</span>)</label>
+                        <input
+                            className="form-control mt-1"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                        />
+                        {imageBase64 && (
+                            <img src={imageBase64} alt="Preview" className="img-thumbnail mt-2" style={{ maxHeight: "100px" }} />
                         )}
                     </div>
                 </div>
