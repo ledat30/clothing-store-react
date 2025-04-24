@@ -23,6 +23,7 @@ const ModalProduct = (props) => {
     const [variants, setVariants] = useState([
         { color: "", size: "", quantity: "" },
     ]);
+    console.log("variants", variants);
 
     const validInputsDefault = {
         name: true,
@@ -36,8 +37,6 @@ const ModalProduct = (props) => {
 
     const [productData, setProductData] = useState(defaultData);
     const [imageBase64, setImageBase64] = useState(null);
-    console.log(imageBase64);
-    
     const [validInputs, setValidInputs] = useState(validInputsDefault);
     const [category, setCategory] = useState([]);
 
@@ -79,8 +78,6 @@ const ModalProduct = (props) => {
     };
 
     useEffect(() => {
-        console.log(props.dataModal);
-
         if (props.action === "UPDATE" && props.dataModal) {
             setProductData({
                 name: props.dataModal.name || "",
