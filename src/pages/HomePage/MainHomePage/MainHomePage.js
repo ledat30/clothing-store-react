@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./MainHomePage.scss";
-// import {
-//   getAllCategory,
-//   getDetailCategoryById,
-// } from "../../../services/categoryService";
-// import { getAllProducts } from "../../../services/productService";
 import { useNavigate } from "react-router-dom";
 // import Popular from "./Popular/Popular";
 import ReactPaginate from "react-paginate";
@@ -18,7 +13,6 @@ function MainHomePage() {
   const [searchTerm, setSearchTerm] = useState("");
   let navigate = useNavigate();
   const [allProducts, setAllProducts] = useState([]);
-  console.log(`allProducts`, allProducts);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [activeFilter, setActiveFilter] = useState('allProducts');
@@ -74,29 +68,29 @@ function MainHomePage() {
       if (rs.data.EC === '0') {
         setAllCategories(rs.data.DT);
       } else {
-          console.error(rs.data.EM);
+        console.error(rs.data.EM);
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Error fetching users:", error);
-  }
+    }
   };
 
   const fetchProducts = async (page = 1, search = "") => {
     try {
       const rs = await axios.get("http://localhost:3000/api/product", {
-          params: { limit, page, search },
+        params: { limit, page, search },
       });
 
       if (rs.data.EC === '0') {
         setAllProducts(rs.data.DT);
-          setTotalPages(rs.data.totalPages);
-          setCurrentPage(page);
+        setTotalPages(rs.data.totalPages);
+        setCurrentPage(page);
       } else {
-          console.error(rs.data.EM);
+        console.error(rs.data.EM);
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Error fetching:", error);
-  }
+    }
   };
 
   const handleCategoryClick = async (id) => {
@@ -105,12 +99,12 @@ function MainHomePage() {
         await fetchProducts();
         setSelectedCategory(null);
       } else {
-        // let response = await getDetailCategoryById({ id });
-        // if (response && response.EC === 0) {
-        //   setAllProducts(response.DT);
-        //   setTotalPages(response.DT.totalPages);
-        //   setSelectedCategory(id);
-        // }
+        let response = await axios.get(`http://localhost:3000/api/category/${id}`);
+
+        if (response.data.EC === '0') {
+          setAllProducts(response.data.DT.products);
+          setTotalPages(response.data.DT.totalPages);
+        }
       }
     } catch (error) {
       console.error("Error fetching products:", error);

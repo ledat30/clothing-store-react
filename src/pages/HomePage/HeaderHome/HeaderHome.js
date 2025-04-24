@@ -13,7 +13,7 @@ import { debounce } from "lodash";
 import axios from "axios";
 
 function HeaderHome() {
-  // const { user, logoutContext } = useContext(UserContext);
+  // const { user } = useContext(UserContext);
   // const { cartItems, fetchCartItems } = useCart();
   let navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,6 +22,15 @@ function HeaderHome() {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [hasSearchResults, setHasSearchResults] = useState(false);
   const searchRef = useRef(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+
+    if (userInfo) {
+      setUser(JSON.parse(userInfo));
+    }
+  }, []);
 
   const handleSearch = debounce(async () => {
     if (searchTerm.trim() !== '') {
@@ -102,18 +111,6 @@ function HeaderHome() {
   const handleProfile = () => {
     navigate('/profile-user');
   }
-
-  // const handleLogout = async () => {
-  //   let data = await logoutUser();
-  //   localStorage.removeItem("jwt");
-  //   // logoutContext();
-  //   if (data && +data.EC === 0) {
-  //     toast.success("Logout successful");
-  //     navigate("/login");
-  //   } else {
-  //     toast.error(data.EM);
-  //   }
-  // };
 
    const handleLogout = async () => {
       try {
@@ -231,7 +228,7 @@ function HeaderHome() {
                       className="header__navbar-user-img"
                     />
                     <span className="header__navbar-user-name">
-                      {/* {user.account.username} */}
+                      {user.username}
                     </span>
 
                     <ul className="header__navbar-user-menu">
