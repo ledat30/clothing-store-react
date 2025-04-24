@@ -23,7 +23,6 @@ const ModalProduct = (props) => {
     const [variants, setVariants] = useState([
         { color: "", size: "", quantity: "" },
     ]);
-    console.log("variants", variants);
 
     const validInputsDefault = {
         name: true,
@@ -88,9 +87,8 @@ const ModalProduct = (props) => {
                 category_id: props.dataModal.category_id || "",
             });
             setVariants(props.dataModal.variants || []);
-            if (props.dataModal.image?.data) {
-                const base64String = new TextDecoder().decode(new Uint8Array(props.dataModal.image.data));
-                setImageBase64(base64String);
+            if (props.dataModal.image) {
+                setImageBase64(props.dataModal.image);
             } else {
                 setImageBase64(null);
             }

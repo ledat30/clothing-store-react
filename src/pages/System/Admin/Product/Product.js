@@ -3,6 +3,7 @@ import ReactPaginate from 'react-paginate';
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import "./Product.scss";
 import ModalProduct from "./ModalProduct";
 
 function Product(ropps) {
@@ -141,7 +142,12 @@ function Product(ropps) {
                                     product.map((products, index) => (
                                         <tr key={products._id}>
                                             <td>{(currentPage - 1) * limit + index + 1}</td>
-                                            <td width="130">Image</td>
+                                            <td>
+                                            <div
+                                                className="home-product-item__img"
+                                                style={{ backgroundImage: `url(${products.image})`}}
+                                            ></div>
+                                            </td>
                                             <td width="450">{products.name}</td>
                                             <td width="200">{products.price}</td>
                                             <td>{products.view_count}</td>
