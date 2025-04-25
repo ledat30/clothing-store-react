@@ -7,6 +7,7 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
 
   // Sử dụng useEffect để lấy thông tin từ localStorage khi component được render
   useEffect(() => {
@@ -18,11 +19,12 @@ export const UserProvider = ({ children }) => {
     if (userInfo) {
       const user = JSON.parse(userInfo);
       setUserRole(user.role); // Lưu role từ localStorage vào state
+      setUserInfo(user); // Lưu thông tin người dùng vào state
     }
   }, []);
 
   return (
-    <UserContext.Provider value={{ isAuthenticated, setIsAuthenticated, userRole, setUserRole }}>
+    <UserContext.Provider value={{ isAuthenticated, setIsAuthenticated, userRole, setUserRole ,userInfo, setUserInfo }}>
       {children}
     </UserContext.Provider>
   );

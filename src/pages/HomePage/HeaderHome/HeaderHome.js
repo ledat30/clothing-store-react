@@ -11,9 +11,10 @@ import { Link } from 'react-router-dom';
 import { debounce } from "lodash";
 // const { Buffer } = require("buffer");
 import axios from "axios";
+import { useUser } from "../../../context/UserContext";
 
 function HeaderHome() {
-  // const { user } = useContext(UserContext);
+    const {  userInfo } = useUser();
   // const { cartItems, fetchCartItems } = useCart();
   let navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -228,7 +229,7 @@ function HeaderHome() {
                       className="header__navbar-user-img"
                     />
                     <span className="header__navbar-user-name">
-                      {user.username}
+                      {userInfo.username}
                     </span>
 
                     <ul className="header__navbar-user-menu">

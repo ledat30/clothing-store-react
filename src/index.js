@@ -5,13 +5,16 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./pages/App";
 import "font-awesome/css/font-awesome.min.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { UserProvider } from "./context/UserContext.js";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
+     <UserProvider>
     <BrowserRouter>
       <App />
     </BrowserRouter>
+    </UserProvider>
   </React.StrictMode>
 );
 
