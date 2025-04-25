@@ -14,7 +14,7 @@ import axios from "axios";
 import { useUser } from "../../../context/UserContext";
 
 function HeaderHome() {
-    const {  userInfo } = useUser();
+    // const {  userInfo } = useUser();
   // const { cartItems, fetchCartItems } = useCart();
   let navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,15 +23,8 @@ function HeaderHome() {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [hasSearchResults, setHasSearchResults] = useState(false);
   const searchRef = useRef(null);
-  const [user, setUser] = useState(null);
+  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
-  useEffect(() => {
-    const userInfo = localStorage.getItem("userInfo");
-
-    if (userInfo) {
-      setUser(JSON.parse(userInfo));
-    }
-  }, []);
 
   const handleSearch = debounce(async () => {
     if (searchTerm.trim() !== '') {
@@ -142,78 +135,6 @@ function HeaderHome() {
                 </li>
               </ul>
               <ul className="header__navbar-list">
-                {/* <li className="header__navbar-item header__navbar-item--has-notify">
-                  <a href="/" className="header__navbar-item-link">
-                    <i className="header__navbar-icon fa fa-bell-o"></i>
-                    Thông báo
-                  </a>
-                  <div className="header__notify">
-                    <header className="header__notify-header">
-                      <h3>Thông báo mới nhất</h3>
-                    </header>
-                    <ul className="header__notify-list">
-                      <li className="header__notify-item header__notify-item--view">
-                        <a href="/" className="header__notify-link">
-                          <img
-                            src="https://juro.com.vn/wp-content/uploads/chup-anh-san-pham-my-pham.jpg"
-                            alt=""
-                            className="header__notify-img"
-                          />
-                          <div className="header__notify-info">
-                            <span className="header__notify-name">
-                              Mỹ phẩm Ohui chính hãng
-                            </span>
-                            <span className="header__notify-descriotion">
-                              Sản phẩm chăm sóc sắc đẹp hàng đầu của thương hiệu
-                              Ohui
-                            </span>
-                          </div>
-                        </a>
-                      </li>
-                      <li className="header__notify-item header__notify-item--view">
-                        <a href="/" className="header__notify-link">
-                          <img
-                            src="https://juro.com.vn/wp-content/uploads/chup-anh-san-pham-my-pham.jpg"
-                            alt=""
-                            className="header__notify-img"
-                          />
-                          <div className="header__notify-info">
-                            <span className="header__notify-name">
-                              Mỹ phẩm Ohui chính hãng
-                            </span>
-                            <span className="header__notify-descriotion">
-                              Sản phẩm chăm sóc sắc đẹp hàng đầu của thương hiệu
-                              Ohui
-                            </span>
-                          </div>
-                        </a>
-                      </li>
-                      <li className="header__notify-item">
-                        <a href="/" className="header__notify-link">
-                          <img
-                            src="https://juro.com.vn/wp-content/uploads/chup-anh-san-pham-my-pham.jpg"
-                            alt=""
-                            className="header__notify-img"
-                          />
-                          <div className="header__notify-info">
-                            <span className="header__notify-name">
-                              Mỹ phẩm Ohui chính hãng thương hiệu số 1 hàn quốc
-                            </span>
-                            <span className="header__notify-descriotion">
-                              Sản phẩm chăm sóc sắc đẹp hàng đầu của thương hiệu
-                              Ohui
-                            </span>
-                          </div>
-                        </a>
-                      </li>
-                    </ul>
-                    <footer className="header__notyfy-footer">
-                      <a href="/" className="header__notyfy-footer-btn">
-                        Xem tất cả
-                      </a>
-                    </footer>
-                  </div>
-                </li> */}
                 <li className="header__navbar-item" >
                   <Link to={'/contact'} className="header__navbar-item-link">
                     <i className="header__navbar-icon fa fa-question-circle-o"></i>{" "}

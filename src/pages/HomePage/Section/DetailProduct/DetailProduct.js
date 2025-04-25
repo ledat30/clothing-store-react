@@ -16,8 +16,8 @@ import ReactPaginate from "react-paginate";
 import axios from "axios";
 
 function DetailProduct() {
-  const {  userInfo } = useUser();
-//   const { fetchCartItems } = useCart();
+  const { userInfo } = useUser();
+  //   const { fetchCartItems } = useCart();
   const [quantily, setQuantily] = useState(1);
   const [price_per_item, setPrice_per_item] = useState("");
   const [dataDetailProduct, setDataDetailproduct] = useState({});
@@ -39,6 +39,59 @@ function DetailProduct() {
   const [isExpanded, setIsExpanded] = useState(false);
   let navigate = useNavigate();
   const [inventoryCount, setInventoryCount] = useState(0);
+
+  const normalizedAttributes = (dataDetailProduct?.ProductAttributes || []).map(attr => ({
+    ...attr,
+    color: attr.color.trim().toLowerCase(),
+    size: attr.size.trim().toLowerCase(),
+    quantity: parseInt(attr.quantity, 10) || 0,
+  }));
+
+  // Lấy danh sách color duy nhất
+  const uniqueColors = Array.from(new Set(normalizedAttributes.map(attr => attr.color)));
+
+  // Lấy danh sách size dựa theo color được chọn
+  const filteredAttributes = selectedColor
+    ? normalizedAttributes.filter(attr => attr.color === selectedColor)
+    : normalizedAttributes;
+
+  const uniqueSizes = Array.from(new Set(filteredAttributes.map(attr => attr.size)));
+
+  const handleColorClick = (color) => {
+    if (color === selectedColor) {
+      setSelectedColor(null); // bỏ chọn
+      setSelectedSize(null);
+    } else {
+      setSelectedColor(color);
+      setSelectedSize(null); // reset size khi đổi màu
+    }
+  };
+
+  const handleSizeClick = (size) => {
+    if (size === selectedSize) {
+      setSelectedSize(null); // bỏ chọn
+    } else {
+      setSelectedSize(size);
+    }
+  };
+
+  // Tìm biến thể khớp cả color + size
+  const selectedVariant = normalizedAttributes.find(attr =>
+    attr.color === selectedColor && attr.size === selectedSize
+  );
+
+  // Kiểm tra toàn bộ sản phẩm còn hàng không
+  const isAllOutOfStock = () => {
+    return normalizedAttributes.every(attr => attr.quantity <= 0);
+  };
+
+  // Lấy số lượng tồn kho theo size + color
+  const getInventory = (size, color) => {
+    const variant = normalizedAttributes.find(
+      attr => attr.size === size && attr.color === color
+    );
+    return variant ? variant.quantity : 0;
+  };
 
   const handleBuyNow = () => {
     if (!selectedSize || !selectedColor) {
@@ -70,40 +123,40 @@ function DetailProduct() {
     return true;
   };
 
-//   const handleConfirmComment = async () => {
-//     setAttemptedSave(true);
+  //   const handleConfirmComment = async () => {
+  //     setAttemptedSave(true);
 
-//     if (checkValidInput() && productId) {
-//       let response = await createCommentProduct(productId, user.account.id, { content });
-//       if (response && response.EC === 0) {
-//         setContent("");
-//         toast.success(response.EM);
-//         await fetchComment(currentPage);
-//         setAttemptedSave(false);
-//         setValidInputComment(true);
-//       } else if (response && response.EC !== 0) {
-//         toast.error(response.EM);
-//         setValidInputComment({
-//           ...validInputComment,
-//           [response.DT]: false,
-//         });
-//       }
-//     }
-//   }
+  //     if (checkValidInput() && productId) {
+  //       let response = await createCommentProduct(productId, user.account.id, { content });
+  //       if (response && response.EC === 0) {
+  //         setContent("");
+  //         toast.success(response.EM);
+  //         await fetchComment(currentPage);
+  //         setAttemptedSave(false);
+  //         setValidInputComment(true);
+  //       } else if (response && response.EC !== 0) {
+  //         toast.error(response.EM);
+  //         setValidInputComment({
+  //           ...validInputComment,
+  //           [response.DT]: false,
+  //         });
+  //       }
+  //     }
+  //   }
 
-//   const handleDeleteComment = async (commentId) => {
-//     try {
-//       const response = await deleteCommentProduct(user.account.id, commentId);
-//       if (response && response.EC === 0) {
-//         toast.success(response.EM);
-//         await fetchComment(currentPage);
-//       } else {
-//         toast.error(response.EM);
-//       }
-//     } catch (error) {
-//       toast.error('Error deleting comment. Please try again later.');
-//     }
-//   };
+  //   const handleDeleteComment = async (commentId) => {
+  //     try {
+  //       const response = await deleteCommentProduct(user.account.id, commentId);
+  //       if (response && response.EC === 0) {
+  //         toast.success(response.EM);
+  //         await fetchComment(currentPage);
+  //       } else {
+  //         toast.error(response.EM);
+  //       }
+  //     } catch (error) {
+  //       toast.error('Error deleting comment. Please try again later.');
+  //     }
+  //   };
 
   renderer.image = function (href, text) {
     return `<p style="text-align: center;"><img src="${href}" alt="${text}" width="500px" height="250px"></p>`;
@@ -123,43 +176,36 @@ function DetailProduct() {
       if (productId) {
         let response = await axios.get(`http://localhost:3000/api/product/${productId}`);
         if (response.data.EC === '0') {
-            setDataDetailproduct(response.data.DT.products);
-            // setPrice_per_item(product.data.price)
-          }
+          setDataDetailproduct(response.data.DT.products);
+          // setPrice_per_item(product.data.price)
+        }
       }
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
-//   useEffect(() => {
-//     if (dataDetailProduct.image) {
-//       const imageBase64 = new Buffer.from(dataDetailProduct.image, "base64").toString("binary");
-//       setPreviewImgURL(imageBase64);
-//     }
-//   }, [dataDetailProduct]);
+  //   useEffect(() => {
+  //     fetchComment();
+  //   }, [currentPage]);
 
-//   useEffect(() => {
-//     fetchComment();
-//   }, [currentPage]);
+  //   const fetchComment = async () => {
+  //     try {
+  //       if (productId) {
+  //         let response = await getAllCommentByProduct(currentPage, currentLimit, productId);
+  //         if (response && response.EC === 0) {
+  //           setListComments(response.DT.comment);
+  //           setTotalPages(response.DT.totalPages);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error:", error);
+  //     }
+  //   };
 
-//   const fetchComment = async () => {
-//     try {
-//       if (productId) {
-//         let response = await getAllCommentByProduct(currentPage, currentLimit, productId);
-//         if (response && response.EC === 0) {
-//           setListComments(response.DT.comment);
-//           setTotalPages(response.DT.totalPages);
-//         }
-//       }
-//     } catch (error) {
-//       console.error("Error:", error);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchRamdomProducts();
-//   }, []);
+  //   useEffect(() => {
+  //     fetchRamdomProducts();
+  //   }, []);
 
   useEffect(() => {
     if (shouldReloadPage) {
@@ -167,16 +213,16 @@ function DetailProduct() {
     }
   }, [shouldReloadPage]);
 
-//   const fetchRamdomProducts = async () => {
-//     try {
-//       let response = await getRamdomProduct();
-//       if (response) {
-//         setRamdomProduct(response);
-//       }
-//     } catch (error) {
-//       console.error("Error fetching ramdom products:", error);
-//     }
-//   }
+  //   const fetchRamdomProducts = async () => {
+  //     try {
+  //       let response = await getRamdomProduct();
+  //       if (response) {
+  //         setRamdomProduct(response);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching ramdom products:", error);
+  //     }
+  //   }
 
   const handleRandomProductClick = () => {
     setShouldReloadPage(true);
@@ -199,16 +245,6 @@ function DetailProduct() {
     }
   };
 
-  const handleSizeClick = (name) => {
-    const newSize = name === selectedSize ? null : name;
-    setSelectedSize(newSize);
-    updateInventoryCount(newSize, selectedColor);
-  };
-  const handleColorClick = (name) => {
-    const newColor = name === selectedColor ? null : name;
-    setSelectedColor(newColor);
-    updateInventoryCount(selectedSize, newColor);
-  };
   const updateInventoryCount = (size, color) => {
     // const count = getInventory(size, color);
     // setInventoryCount(count);
@@ -218,75 +254,47 @@ function DetailProduct() {
     setCurrentPage(+event.selected + 1);
   };
 
-//   const handleAddToCart = async () => {
+  //   const handleAddToCart = async () => {
 
-//     if (!selectedSize || !selectedColor) {
-//       toast.error("Please select options");
-//       return;
-//     }
-//     try {
-//       const selectedColorSize = dataDetailProduct.ProductAttributes.find(item =>
-//         item.AttributeValue1.name === selectedSize &&
-//         item.AttributeValue2.name === selectedColor
-//       );
-//       if (selectedColorSize) {
-//         const product_attribute_value_Id = selectedColorSize.id;
+  //     if (!selectedSize || !selectedColor) {
+  //       toast.error("Please select options");
+  //       return;
+  //     }
+  //     try {
+  //       const selectedColorSize = dataDetailProduct.ProductAttributes.find(item =>
+  //         item.AttributeValue1.name === selectedSize &&
+  //         item.AttributeValue2.name === selectedColor
+  //       );
+  //       if (selectedColorSize) {
+  //         const product_attribute_value_Id = selectedColorSize.id;
 
-//         const response = await addToCart(
-//           product_attribute_value_Id,
-//           user.account.id,
-//           user.account.provinceId,
-//           user.account.districtId,
-//           user.account.wardId,
-//           dataDetailProduct.Store.id,
-//           { quantily: quantily, price_per_item: price_per_item, }
-//         );
-//         if (response && response.EC === 0) {
-//           toast.success(response.EM);
-//           fetchProduct();
-//         //   fetchCartItems(user.account.id);
-//           setQuantily(1);
-//           setSelectedColor("");
-//           setSelectedSize("");
-//         } if (response && response.EC === -3) {
-//           toast.error(response.EM)
-//         }
-//       } else {
-//         toast.error("Selected options are not available");
-//       }
-//     } catch (error) {
-//       console.error("Error:", error);
-//       toast.error("Failed to add product to cart. Please try again later.");
-//     }
-//   }
-
-//   const getInventory = (valua1, value2) => {
-//     const selectedColorSize = dataDetailProduct.ProductAttributes.find(item =>
-//       item.AttributeValue1.name === valua1 &&
-//       item.AttributeValue2.name === value2
-//     );
-//     return selectedColorSize?.Inventories?.[0]?.currentNumber || 0;
-//   }
-
-  const isSizeAvailable = (size) => {
-    return dataDetailProduct.ProductAttributes.some(item =>
-      item.AttributeValue1.name === size &&
-      item.Inventories.some(inventory => inventory.currentNumber > 0)
-    );
-  };
-
-  const isColorAvailable = (color) => {
-    return dataDetailProduct.ProductAttributes.some(item =>
-      item.AttributeValue2.name === color &&
-      item.Inventories.some(inventory => inventory.currentNumber > 0)
-    );
-  };
-
-  const isAllOutOfStock = () => {
-    return dataDetailProduct.ProductAttributes.every(item =>
-      item.Inventories.every(inventory => inventory.currentNumber === 0)
-    );
-  };
+  //         const response = await addToCart(
+  //           product_attribute_value_Id,
+  //           user.account.id,
+  //           user.account.provinceId,
+  //           user.account.districtId,
+  //           user.account.wardId,
+  //           dataDetailProduct.Store.id,
+  //           { quantily: quantily, price_per_item: price_per_item, }
+  //         );
+  //         if (response && response.EC === 0) {
+  //           toast.success(response.EM);
+  //           fetchProduct();
+  //         //   fetchCartItems(user.account.id);
+  //           setQuantily(1);
+  //           setSelectedColor("");
+  //           setSelectedSize("");
+  //         } if (response && response.EC === -3) {
+  //           toast.error(response.EM)
+  //         }
+  //       } else {
+  //         toast.error("Selected options are not available");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error:", error);
+  //       toast.error("Failed to add product to cart. Please try again later.");
+  //     }
+  //   }
 
   return (
     <div className="container-detail">
@@ -300,7 +308,7 @@ function DetailProduct() {
                 <div className="image-product">
                   <div
                     className="image"
-                    style={{ backgroundImage: `url(${dataDetailProduct.image})`}}
+                    style={{ backgroundImage: `url(${dataDetailProduct.image})` }}
                     alt="Placeholder Image"
                   />
                 </div>
@@ -315,45 +323,41 @@ function DetailProduct() {
                     <span className="current">{dataDetailProduct.price}đ</span>
                   </div>
                   <div className="choose-color-size">
-                    {/* <div className="size-color">
-                      Color
+                    <div className="size-color">
+                      Màu sắc:
                       <div className="choose-size-color">
-                        {Array.from(new Set(dataDetailProduct?.ProductAttributes?.map(item => item.color))).map((name, index) => {
-                          const isActive = name === selectedSize;
-                          const isAvailable = isSizeAvailable(name);
-                          const isNoHover = !isAvailable;
-                          return (
-                            <div key={index}
-                              className={`choose ${isActive ? 'active' : ''} ${isNoHover ? 'no-hover' : ''}`}
-                              onClick={() => isAvailable && handleSizeClick(name)}
-                            >
-                              {name}
-                            </div>
-                          );
-                        })}
+                        {uniqueColors.map((color, index) => (
+                          <div
+                            key={index}
+                            className={`choose ${color === selectedColor ? 'active' : ''}`}
+                            onClick={() => handleColorClick(color)}
+                          >
+                            {color}
+                          </div>
+                        ))}
                       </div>
-                    </div> */}
-                    {/* <div className="size-color">
-                      Chọn {dataDetailProduct?.ProductAttributes[0]?.AttributeValue2?.Attribute?.name}
-                      <div className="choose-size-color">
-                        {Array.from(new Set(dataDetailProduct?.ProductAttributes?.map(item => item.AttributeValue2.name))).map((name, index) => {
-                          const isActive = name === selectedColor;
-                          const isAvailable = isColorAvailable(name);
-                          const isNoHover = !isAvailable;
-                          return (
-                            <div key={index}
-                              className={`choose ${isActive ? 'active' : ''} ${isNoHover ? 'no-hover' : ''}`}
-                              onClick={() => isAvailable && handleColorClick(name)}
-                            >
-                              {name}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div> */}
-                    <div style={{ fontSize: '15px', marginTop: '15px', marginBottom: '-15px' }}>
-                      Số sản phẩm còn lại: 111 sản phẩm
                     </div>
+
+                    {/* Kích thước */}
+                    <div className="size-color">
+                      Kích thước:
+                      <div className="choose-size-color">
+                        {uniqueSizes.map((size, index) => (
+                          <div
+                            key={index}
+                            className={`choose ${size === selectedSize ? 'active' : ''}`}
+                            onClick={() => handleSizeClick(size)}
+                          >
+                            {size}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {selectedColor && selectedSize && selectedVariant && (
+                      <div style={{ fontSize: '15px', marginTop: '15px', marginBottom: '-15px' }}>
+                        Số sản phẩm còn lại: {selectedVariant.quantity} sản phẩm
+                      </div>
+                    )}
                     <div className="quantily">
                       <div className="cong-tru">
                         Số lượng
@@ -379,14 +383,16 @@ function DetailProduct() {
                         <button
                           className="button-quantily"
                           onClick={incrementQuantity}
-                        //   disabled={quantily >= getInventory(selectedSize, selectedColor)}
+                          disabled={
+                            !selectedColor || !selectedSize || quantily >= getInventory(selectedSize, selectedColor)
+                          }
                         >
                           +
                         </button>
                       </div>
                     </div>
                     <div className="button-buy-add_cart">
-                      {/* {
+                      {
                         isAllOutOfStock() ? (
                           <div className="out_of_stock">Hết hàng</div>
                         ) : (
@@ -395,12 +401,12 @@ function DetailProduct() {
                           ) : (
                             <>
                               <div className="buy" onClick={handleBuyNow}>Buy now</div>
-                              <div className="add_cart" onClick={handleAddToCart} >Add to cart</div>
-                              <div className="add_cart" >Add to cart</div>
+                              {/* <div className="add_cart" onClick={handleAddToCart}>Add to cart</div>  */}
+                              <div className="add_cart">Add to cart</div>
                             </>
                           )
                         )
-                      } */}
+                      }
                     </div>
                   </div>
                 </div>
@@ -435,9 +441,9 @@ function DetailProduct() {
               </div>
             </div>
 
-            {/* <div className="detail-content-product">
+            <div className="detail-content-product">
               <div className="name-product">
-                {dataDetailProduct.product_name}
+                {dataDetailProduct.name}
               </div>
               <div className={`content ${!isExpanded ? 'content-with-shadow' : ''}`}>
                 <p className={`content-product ${isExpanded ? 'content-product_open' : ''}`} dangerouslySetInnerHTML={{ __html: markdownToHtml(dataDetailProduct.contentMarkdown) }}>
@@ -448,7 +454,7 @@ function DetailProduct() {
                   <span className="more-detail_product" onClick={toggleContent}>Xem thêm</span>
                 )}
               </div>
-            </div> */}
+            </div>
 
             <div className="comment">
               <div className="div"></div>
@@ -468,7 +474,7 @@ function DetailProduct() {
                   <span className="submit-comment">Đăng</span>
                   {/* <span className="submit-comment" onClick={() => handleConfirmComment()}>Đăng</span> */}
                 </div>
-{/* 
+                {/* 
                 {listComments && listComments.length > 0 && listComments.map((item, index) => {
                   return (
                     <div className="d-flex justify-content-center py-2" key={index}>
