@@ -1,20 +1,71 @@
 import "./login.scss";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useUser } from "../../../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import Select from "react-select";
 
 function Login(props) {
     const { setIsAuthenticated, setUserRole } = useUser();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [province, setProvince] = useState("");
+    const [district, setDistrict] = useState("");
+    const [ward, setWard] = useState("");
+    const [province2, setProvince2] = useState("");
+    const [district2, setDistrict2] = useState("");
+    const [ward2, setWard2] = useState("");
     const [username, setName] = useState("");
+    const [phonenumber, setPhone] = useState("");
     const [otp, setOtp] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLogin, setIsLogin] = useState(true);
     const [isOtpSent, setIsOtpSent] = useState(false);
     const navigate = useNavigate();
+    const [locations, setLocations] = useState([]);
+    const [filteredDistricts, setFilteredDistricts] = useState([]);
+    const [filteredWards, setFilteredWards] = useState([]);
+
+    useEffect(() => {
+        getAllLocationData();
+    }, []);
+
+    const getAllLocationData = async () => {
+        try {
+            let response = await axios.get("http://localhost:3000/api/user/getAllProvinceDistrictWard");
+            if (response.data && response.data.EC === 0) {
+                setLocations(response.data.DT);
+            }
+        } catch (error) {
+            console.error("Error fetching location data:", error);
+        }
+    };
+
+    const handleOnChangeInput = (selected, name) => {
+        if (name === "province") {
+            const selectedProvince = locations.find(prov => prov.id === selected.value);
+            const districts = selectedProvince ? selectedProvince.Districts : [];
+            setFilteredDistricts(districts);
+            setFilteredWards([]);
+            setProvince(selectedProvince);
+            setProvince2(selectedProvince ? selectedProvince.id : null);
+        }
+
+        if (name === "district") {
+            const selectedDistrict = filteredDistricts.find(dist => dist.id === selected.value);
+            const wards = selectedDistrict ? selectedDistrict.Wards : [];
+            setFilteredWards(wards);
+            setDistrict(selectedDistrict);
+            setDistrict2(selectedDistrict ? selectedDistrict.id : null);
+        }
+
+        if (name === "ward") {
+            const selectedWard = filteredWards.find(ward => ward.id === selected.value);
+            setWard(selectedWard);
+            setWard2(selectedWard ? selectedWard.id : null);
+        }
+    };
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -36,7 +87,7 @@ function Login(props) {
                 const role = response.data.DT.user.role;
                 if (role === "admin") {
                     navigate("/user");
-                }else if(role === "customer"){
+                } else if (role === "customer") {
                     navigate("/home");
                 }
                 toast.success("Đăng nhập thành công!");
@@ -54,6 +105,10 @@ function Login(props) {
                 username,
                 email,
                 password,
+                phonenumber,
+                provinceId: province2,
+                districtId: district2,
+                wardId:ward2
             });
 
             if (response.data.EC === '0') {
@@ -94,25 +149,8 @@ function Login(props) {
 
     return (
         <div className="login-container">
-            <div className="screen-1" style={{ height: isLogin || isOtpSent ? "auto" : "600px", marginTop: isLogin || isOtpSent ? "70px" : "auto" }}>
+            <div className="screen-1" style={{ height: isLogin || isOtpSent ? "auto" : "900px", marginTop: isLogin || isOtpSent ? "70px" : "auto" }}>
                 <div className="title-login">{isLogin ? "Login" : isOtpSent ? "Verify OTP" : "Register"}</div>
-
-                {!isLogin && !isOtpSent && (
-                    <div className="email">
-                        <label htmlFor="name">Full Name</label>
-                        <div className="sec-2">
-                            <i className="fa fa-user-o" aria-hidden="true"></i>
-                            <input
-                                type="text"
-                                name="username"
-                                value={username}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder=" Enter your name"
-                            />
-                        </div>
-                    </div>
-                )}
-
                 <div className="email">
                     <label htmlFor="email">Email Address</label>
                     <div className="sec-2">
@@ -149,6 +187,73 @@ function Login(props) {
                     </div>
                 )}
 
+                {!isLogin && !isOtpSent && (
+                    <>
+                        <div className="email">
+                            <label htmlFor="name">Full Name</label>
+                            <div className="sec-2">
+                                <i className="fa fa-user-o" aria-hidden="true"></i>
+                                <input
+                                    type="text"
+                                    name="username"
+                                    value={username}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder=" Enter your name"
+                                />
+                            </div>
+                        </div>
+                        <div className="email">
+                            <label htmlFor="name">PhoneNumber</label>
+                            <div className="sec-2">
+                                <i class="fa fa-phone" aria-hidden="true"></i>
+                                <input
+                                    type="text"
+                                    name="phonenumber"
+                                    value={phonenumber}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder=" Enter your phonenumber"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="select_option">
+                            <div className="col-12 col-sm-12 from-group ">
+                                <Select
+                                    className={'mb-4'}
+                                    value={locations.find(option => option.id === province)}
+                                    onChange={(selected) => handleOnChangeInput(selected, 'province')}
+                                    options={locations.map(province => ({
+                                        value: province.id,
+                                        label: province.province_name,
+                                    }))}
+                                />
+                            </div>
+                            <div className="col-12 col-sm-12 from-group">
+                                <Select
+                                    className={'mb-4'}
+                                    value={filteredDistricts.find(option => option.id === district)}
+                                    onChange={(selected) => handleOnChangeInput(selected, 'district')}
+                                    options={filteredDistricts.map(district => ({
+                                        value: district.id,
+                                        label: district.district_name,
+                                    }))}
+                                />
+                            </div>
+                            <div className="col-12 col-sm-12 from-group ">
+                                <Select
+                                    className={''}
+                                    value={filteredWards.find(option => option.id === ward)}
+                                    onChange={(selected) => handleOnChangeInput(selected, 'ward')}
+                                    options={filteredWards.map(ward => ({
+                                        value: ward.id,
+                                        label: ward.ward_name,
+                                    }))}
+                                />
+                            </div>
+                        </div>
+                    </>
+                )}
+
                 {isOtpSent && (
                     <div className="email">
                         <label htmlFor="email">Enter OTP</label>
@@ -173,9 +278,9 @@ function Login(props) {
                 </button>
 
                 <div className="footer-login">
-                    <span className="register" onClick={() => { 
-                        setIsLogin(!isLogin); 
-                        setIsOtpSent(false); 
+                    <span className="register" onClick={() => {
+                        setIsLogin(!isLogin);
+                        setIsOtpSent(false);
                     }}>
                         {isLogin ? "Đăng ký ngay?" : isOtpSent ? "Quay lại đăng ký" : "Đã có tài khoản? Đăng nhập"}
                     </span>
