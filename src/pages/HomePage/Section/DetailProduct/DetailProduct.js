@@ -23,8 +23,6 @@ function DetailProduct() {
   console.log("dataDetailProduct", dataDetailProduct);
   const { id: productId } = useParams();
   const [shouldReloadPage, setShouldReloadPage] = useState(false);
-  const [previewImgURL, setPreviewImgURL] = useState("");
-  const renderer = new marked.Renderer();
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [randomProduct, setRamdomProduct] = useState([]);
@@ -157,10 +155,6 @@ function DetailProduct() {
   //     }
   //   };
 
-  renderer.image = function (href, text) {
-    return `<p style="text-align: center;"><img src="${href}" alt="${text}" width="500px" height="250px"></p>`;
-  };
-  marked.setOptions({ renderer });
 
   const markdownToHtml = (markdown) => {
     return marked(markdown, { sanitize: true });
@@ -176,7 +170,7 @@ function DetailProduct() {
         let response = await axios.get(`http://localhost:3000/api/product/${productId}`);
         if (response.data.EC === '0') {
           setDataDetailproduct(response.data.DT.products);
-          // setPrice_per_item(product.data.price)
+          setPrice_per_item(response.data.DT.products.price);
         }
       }
     } catch (error) {
@@ -253,46 +247,51 @@ function DetailProduct() {
     setCurrentPage(+event.selected + 1);
   };
 
-    // const handleAddToCart = async () => {
+    const handleAddToCart = async () => {
+      if (!selectedSize || !selectedColor) {
+        toast.warning("Please select options");
+        return;
+      }
+      try {
+        const selectedColorSize = dataDetailProduct.ProductAttributes.find(item => {
+          const isSizeMatch = item.size.trim().toLowerCase() === selectedSize.trim().toLowerCase();
+          const isColorMatch = item.color.trim().toLowerCase() === selectedColor.trim().toLowerCase();
+          return isSizeMatch && isColorMatch;
+        });
+        if (selectedColorSize) {
+          const product_attribute_value_Id = selectedColorSize.id;
 
-    //   if (!selectedSize || !selectedColor) {
-    //     toast.error("Please select options");
-    //     return;
-    //   }
-    //   try {
-    //     const selectedColorSize = dataDetailProduct.ProductAttributes.find(item =>
-    //       item.AttributeValue1.name === selectedSize &&
-    //       item.AttributeValue2.name === selectedColor
-    //     );
-    //     if (selectedColorSize) {
-    //       const product_attribute_value_Id = selectedColorSize.id;
-
-    //       const response = await addToCart(
-    //         product_attribute_value_Id,
-    //         userInfo.account.id,
-    //         userInfo.account.provinceId,
-    //         userInfo.account.districtId,
-    //         userInfo.account.wardId,
-    //         { quantily: quantily, price_per_item: price_per_item, }
-    //       );
-    //       if (response && response.EC === 0) {
-    //         toast.success(response.EM);
-    //         fetchProduct();
-    //       //   fetchCartItems(user.account.id);
-    //         setQuantily(1);
-    //         setSelectedColor("");
-    //         setSelectedSize("");
-    //       } if (response && response.EC === -3) {
-    //         toast.error(response.EM)
-    //       }
-    //     } else {
-    //       toast.error("Selected options are not available");
-    //     }
-    //   } catch (error) {
-    //     console.error("Error:", error);
-    //     toast.error("Failed to add product to cart. Please try again later.");
-    //   }
-    // }
+          const response = await axios.post(
+            `http://localhost:3000/api/product/add-to-cart`,
+            { quantity: quantily, price_per_item: price_per_item },
+            {
+              params: {
+                product_attribute_value_Id,
+                userId: userInfo.id,
+                provinceId: userInfo.provinceId,
+                districtId: userInfo.districtId,
+                wardId: userInfo.wardId,
+              },
+            }
+          );
+          if (response && response.EC === 0) {
+            toast.success(response.EM);
+            fetchProduct();
+          //   fetchCartItems(user.account.id);
+            setQuantily(1);
+            setSelectedColor("");
+            setSelectedSize("");
+          } if (response && response.EC === -3) {
+            toast.error(response.EM)
+          }
+        } else {
+          toast.error("Selected options are not available");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        toast.error("Failed to add product to cart. Please try again later.");
+      }
+    }
 
   return (
     <div className="container-detail">
@@ -399,8 +398,7 @@ function DetailProduct() {
                           ) : (
                             <>
                               <div className="buy" onClick={handleBuyNow}>Buy now</div>
-                              {/* <div className="add_cart" onClick={handleAddToCart}>Add to cart</div>  */}
-                              <div className="add_cart">Add to cart</div>
+                              <div className="add_cart" onClick={handleAddToCart}>Add to cart</div> 
                             </>
                           )
                         )
