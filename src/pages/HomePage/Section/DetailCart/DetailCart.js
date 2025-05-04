@@ -181,72 +181,64 @@ function DetailCart() {
         return distanceInKm;
     };
 
-    // const handBuyProduct = async () => {
-    //     if (isRelative && !checkValidInput()) {
-    //         return;
-    //     };
-    //     const selectedOrderItemIds = [];
-    //     cartItems.forEach(item => {
-    //         item.OrderItems.forEach(orderItem => {
-    //             if (selectAll || selectedItems[orderItem.id]) {
-    //                 selectedOrderItemIds.push({
-    //                     product_attribute_value_Id: orderItem.ProductAttribute.id,
-    //                     orderId: item.id,
-    //                     storeId: orderItem.ProductAttribute.Product.Store.id,
-    //                     quantily: quantities[orderItem.ProductAttribute.Inventories[0].id],
-    //                     price: orderItem.ProductAttribute.Product.price
-    //                 });
-    //             }
-    //         });
-    //     });
-    //     if (selectedOrderItemIds.length > 0) {
-    //         if (activeIndex === null) {
-    //             toast.info("Please select a payment method.");
-    //             return;
-    //         }
+    const handBuyProduct = async () => {
+        if (isRelative && !checkValidInput()) {
+            return;
+        };
+        const selectedOrderItemIds = [];
+        cartItems.forEach(item => {
+            item.OrderItems.forEach(orderItem => {
+                if (selectAll || selectedItems[orderItem.id]) {
+                    selectedOrderItemIds.push({
+                        product_attribute_value_Id: orderItem.ProductAttribute.id,
+                        orderId: item.id,
+                        quantily: quantities[orderItem.ProductAttribute?.id] || 0,
+                        price: orderItem.ProductAttribute.Product.price
+                    });
+                }
+            });
+        });
+        if (selectedOrderItemIds.length > 0) {
 
-    //         const selectedWardId = isRelative ? `${userData.ward.id}` : `${user.account.wardId}`;
-    //         const selectedDistrictId = isRelative ? `${userData.district.id}` : `${user.account.districtId}`;
-    //         const selectedProvinceId = isRelative ? `${userData.province.id}` : `${user.account.provinceId}`;
+            const selectedWardId = isRelative ? `${userData.ward.id}` : `${userInfo.wardId}`;
+            const selectedDistrictId = isRelative ? `${userData.district.id}` : `${userInfo.districtId}`;
+            const selectedProvinceId = isRelative ? `${userData.province.id}` : `${userInfo.provinceId}`;
 
-    //         const shipper = listShippers.find(shipper => {
-    //             return shipper.Ward.id === parseInt(selectedWardId) &&
-    //                 shipper.District.id === parseInt(selectedDistrictId) &&
-    //                 shipper.Province.id === parseInt(selectedProvinceId);
-    //         });
+            const responses = await Promise.all(
+                selectedOrderItemIds.map(orderItem =>
+                    axios.post(
+                        `http://localhost:3000/api/product/buy?orderId=${orderItem.orderId}&product_attribute_value_Id=${orderItem.product_attribute_value_Id}`,
+                        {
+                            quantily: orderItem.quantily,
+                            price_per_item: orderItem.price,
+                            shippingFee: shippingFee,
+                            ward: selectedWardId,
+                            province: selectedProvinceId,
+                            district: selectedDistrictId,
+                            phonenumber: userData.phonenumber,
+                            address_detail: userData.address_detail,
+                            customerName: userData.customerName,
+                        }
+                    )
+                )
+            );            
 
-    //         if (!shipper) {
-    //             toast.error("Chưa hỗ trợ giao hàng khu vực này.");
-    //             return;
-    //         }
-
-    //         const responses = await Promise.all(selectedOrderItemIds.map(orderItem =>
-    //             buyProduct(orderItem.product_attribute_value_Id, orderItem.orderId, orderItem.storeId, {
-    //                 quantily: orderItem.quantily, price_per_item: orderItem.price, payment_methodID: listPayMents[activeIndex].id, shippingFee: shippingFee,
-    //                 ward: selectedWardId,
-    //                 province: selectedProvinceId,
-    //                 district: selectedDistrictId,
-    //                 phonenumber: userData.phonenumber, address_detail: userData.address_detail, customerName: userData.customerName,
-    //             })
-    //         ));
-
-    //         const allSuccess = responses.every(response => response.EC === 0);
-    //         if (allSuccess) {
-    //             toast.success("All selected items purchased successfully!")
-    //             setSelectAll(false);
-    //             setSelectedItems({});
-    //             setListPayMents([]);
-    //             fetchCartItems(user.account.id);
-    //             navigate(`/profile-user`);
-    //         } else {
-    //             responses.forEach(response => {
-    //                 if (response.EC !== 0) toast.error(response.EM);
-    //             });
-    //         }
-    //     } else {
-    //         toast.info("No items selected for purchase.");
-    //     }
-    // }
+            const allSuccess = responses.every(response => response.EC === 0);
+            if (allSuccess) {
+                toast.success("All selected items purchased successfully!")
+                setSelectAll(false);
+                setSelectedItems({});
+                fetchCartItems(userInfo.id);
+                navigate(`/home`);
+            } else {
+                responses.forEach(response => {
+                    if (response.EC !== 0) toast.error(response.EM);
+                });
+            }
+        } else {
+            toast.info("No items selected for purchase.");
+        }
+    }
 
     const [quantities, setQuantities] = useState(() => {
         const initialQuantities = {};
@@ -579,8 +571,7 @@ function DetailCart() {
                                 </div>
                             </div>
                             <div className="button-buy">
-                                {/* <div className="buy" onClick={handBuyProduct}>Buy now</div> */}
-                                <div className="buy">Buy now</div>
+                                <div className="buy" onClick={handBuyProduct}>Buy now</div>
                             </div>
                         </div>
                     </div>
