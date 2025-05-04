@@ -5,6 +5,7 @@ import Login from "../pages/System/Admin/Login/login";
 import HomePage from "../pages/HomePage/HomePage";
 import Contact from "../pages/HomePage/Contact/Contact";
 import DetailProduct from "../pages/HomePage/Section/DetailProduct/DetailProduct";
+import DetailCart from "../pages/HomePage/Section/DetailCart/DetailCart";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const userInfo = localStorage.getItem("userInfo");
@@ -49,6 +50,14 @@ function UserRoutes({ setIsAuthenticated }) {
             element={
               <ProtectedRoute allowedRoles={["customer"]}>
                 <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/detail-cart"
+            element={
+              <ProtectedRoute allowedRoles={["customer"]}>
+                <DetailCart />
               </ProtectedRoute>
             }
           />

@@ -1,13 +1,11 @@
 import "./DetailProduct.scss";
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-// import { useCart } from '../../../../context/cartContext';
+import { useCart } from '../../../../context/cartContext';
 import React, { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
 import HeaderHome from "../../HeaderHome/HeaderHome";
 import Footer from "../../Footer/Footer";
 import { Link } from "react-router-dom";
-// import { getDetailProductById, getRamdomProduct, getAllCommentByProduct, createCommentProduct, deleteCommentProduct, addToCart } from '../../../../../src/services/productService';
 import _ from 'lodash';
 import { marked } from 'marked';
 import { toast } from "react-toastify";
@@ -16,11 +14,10 @@ import axios from "axios";
 
 function DetailProduct() {
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-  //   const { fetchCartItems } = useCart();
+  const { fetchCartItems } = useCart();
   const [quantily, setQuantily] = useState(1);
   const [price_per_item, setPrice_per_item] = useState("");
   const [dataDetailProduct, setDataDetailproduct] = useState({});
-  console.log("dataDetailProduct", dataDetailProduct);
   const { id: productId } = useParams();
   const [shouldReloadPage, setShouldReloadPage] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -114,46 +111,57 @@ function DetailProduct() {
   const checkValidInput = () => {
     if (!content) {
       setValidInputComment(false);
-      toast.error("Empty input content!");
+      toast.warning("Vui lòng nhập nội dung!");
       return false;
     }
     return true;
   };
 
-  //   const handleConfirmComment = async () => {
-  //     setAttemptedSave(true);
+    const handleConfirmComment = async () => {
+      setAttemptedSave(true);
 
-  //     if (checkValidInput() && productId) {
-  //       let response = await createCommentProduct(productId, user.account.id, { content });
-  //       if (response && response.EC === 0) {
-  //         setContent("");
-  //         toast.success(response.EM);
-  //         await fetchComment(currentPage);
-  //         setAttemptedSave(false);
-  //         setValidInputComment(true);
-  //       } else if (response && response.EC !== 0) {
-  //         toast.error(response.EM);
-  //         setValidInputComment({
-  //           ...validInputComment,
-  //           [response.DT]: false,
-  //         });
-  //       }
-  //     }
-  //   }
+      if (checkValidInput() && productId) {
+        let response = await axios.post(
+          `http://localhost:3000/api/comment/create?productId=${productId}&userId=${userInfo.id}`,
+          { content }
+        )
+        
+        if (response.data && response.data.EC === 0) {
+          setContent("");
+          toast.success(`Đánh giá thành công!`);
+          await fetchComment(currentPage);
+          setAttemptedSave(false);
+          setValidInputComment(true);
+        } else if (response.data && response.data.EC !== 0) {
+          toast.error(response.data.EM);
+          setValidInputComment({
+            ...validInputComment,
+            [response.DT]: false,
+          });
+        }
+      }
+    }
 
-  //   const handleDeleteComment = async (commentId) => {
-  //     try {
-  //       const response = await deleteCommentProduct(user.account.id, commentId);
-  //       if (response && response.EC === 0) {
-  //         toast.success(response.EM);
-  //         await fetchComment(currentPage);
-  //       } else {
-  //         toast.error(response.EM);
-  //       }
-  //     } catch (error) {
-  //       toast.error('Error deleting comment. Please try again later.');
-  //     }
-  //   };
+    const handleDeleteComment = async (commentId) => {
+      try {
+        const response = await axios.delete(`http://localhost:3000/api/comment/delete`, {
+          params: {
+            userId: userInfo.id
+          },
+          data: {
+            id: commentId
+          }
+        });
+        if (response.data && response.data.EC === 0) {
+          toast.success(response.data.EM);
+          await fetchComment(currentPage);
+        } else {
+          toast.error(response.data.EM);
+        }
+      } catch (error) {
+        toast.error('Error deleting comment. Please try again later.');
+      }
+    };
 
 
   const markdownToHtml = (markdown) => {
@@ -178,27 +186,34 @@ function DetailProduct() {
     }
   };
 
-  //   useEffect(() => {
-  //     fetchComment();
-  //   }, [currentPage]);
+    useEffect(() => {
+      fetchComment();
+    }, [currentPage]);
 
-  //   const fetchComment = async () => {
-  //     try {
-  //       if (productId) {
-  //         let response = await getAllCommentByProduct(currentPage, currentLimit, productId);
-  //         if (response && response.EC === 0) {
-  //           setListComments(response.DT.comment);
-  //           setTotalPages(response.DT.totalPages);
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error("Error:", error);
-  //     }
-  //   };
+    const fetchComment = async () => {
+      try {
+        if (productId) {
+          let response = await axios.get(`http://localhost:3000/api/comment/read`, {
+            params: {
+              page: currentPage,
+              limit: currentLimit,
+              productId: productId
+            }
+          });
+          
+          if (response.data && response.data.EC === 0) {
+            setListComments(response.data.DT.comment);
+            setTotalPages(response.data.DT.totalPages);
+          }
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
 
-  //   useEffect(() => {
-  //     fetchRamdomProducts();
-  //   }, []);
+  useEffect(() => {
+    fetchRamdomProducts();
+  }, []);
 
   useEffect(() => {
     if (shouldReloadPage) {
@@ -206,16 +221,17 @@ function DetailProduct() {
     }
   }, [shouldReloadPage]);
 
-  //   const fetchRamdomProducts = async () => {
-  //     try {
-  //       let response = await getRamdomProduct();
-  //       if (response) {
-  //         setRamdomProduct(response);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching ramdom products:", error);
-  //     }
-  //   }
+  const fetchRamdomProducts = async () => {
+    try {
+      let response = await axios.get(`http://localhost:3000/api/random-products`);
+
+      if (response.status === 200) {
+        setRamdomProduct(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching ramdom products:", error);
+    }
+  }
 
   const handleRandomProductClick = () => {
     setShouldReloadPage(true);
@@ -247,51 +263,52 @@ function DetailProduct() {
     setCurrentPage(+event.selected + 1);
   };
 
-    const handleAddToCart = async () => {
-      if (!selectedSize || !selectedColor) {
-        toast.warning("Please select options");
-        return;
-      }
-      try {
-        const selectedColorSize = dataDetailProduct.ProductAttributes.find(item => {
-          const isSizeMatch = item.size.trim().toLowerCase() === selectedSize.trim().toLowerCase();
-          const isColorMatch = item.color.trim().toLowerCase() === selectedColor.trim().toLowerCase();
-          return isSizeMatch && isColorMatch;
-        });
-        if (selectedColorSize) {
-          const product_attribute_value_Id = selectedColorSize.id;
-
-          const response = await axios.post(
-            `http://localhost:3000/api/product/add-to-cart`,
-            { quantity: quantily, price_per_item: price_per_item },
-            {
-              params: {
-                product_attribute_value_Id,
-                userId: userInfo.id,
-                provinceId: userInfo.provinceId,
-                districtId: userInfo.districtId,
-                wardId: userInfo.wardId,
-              },
-            }
-          );
-          if (response && response.EC === 0) {
-            toast.success(response.EM);
-            fetchProduct();
-          //   fetchCartItems(user.account.id);
-            setQuantily(1);
-            setSelectedColor("");
-            setSelectedSize("");
-          } if (response && response.EC === -3) {
-            toast.error(response.EM)
-          }
-        } else {
-          toast.error("Selected options are not available");
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        toast.error("Failed to add product to cart. Please try again later.");
-      }
+  const handleAddToCart = async () => {
+    if (!selectedSize || !selectedColor) {
+      toast.warning("Please select options");
+      return;
     }
+    try {
+      const selectedColorSize = dataDetailProduct.ProductAttributes.find(item => {
+        const isSizeMatch = item.size.trim().toLowerCase() === selectedSize.trim().toLowerCase();
+        const isColorMatch = item.color.trim().toLowerCase() === selectedColor.trim().toLowerCase();
+        return isSizeMatch && isColorMatch;
+      });
+      if (selectedColorSize) {
+        const product_attribute_value_Id = selectedColorSize.id;
+
+        const response = await axios.post(
+          `http://localhost:3000/api/product/add-to-cart`,
+          { quantity: quantily, price_per_item: price_per_item },
+          {
+            params: {
+              product_attribute_value_Id,
+              userId: userInfo.id,
+              provinceId: userInfo.provinceId,
+              districtId: userInfo.districtId,
+              wardId: userInfo.wardId,
+            },
+          }
+        );
+
+        if (response.data && response.data.EC === 0) {
+          toast.success(response.data.EM);
+          fetchCartItems(userInfo.id);
+          fetchProduct();
+          setQuantily(1);
+          setSelectedColor("");
+          setSelectedSize("");
+        } if (response && response.EC === -3) {
+          toast.error(response.EM)
+        }
+      } else {
+        toast.error("Selected options are not available");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to add product to cart. Please try again later.");
+    }
+  }
 
   return (
     <div className="container-detail">
@@ -398,7 +415,7 @@ function DetailProduct() {
                           ) : (
                             <>
                               <div className="buy" onClick={handleBuyNow}>Buy now</div>
-                              <div className="add_cart" onClick={handleAddToCart}>Add to cart</div> 
+                              <div className="add_cart" onClick={handleAddToCart}>Add to cart</div>
                             </>
                           )
                         )
@@ -467,10 +484,8 @@ function DetailProduct() {
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                   />
-                  <span className="submit-comment">Đăng</span>
-                  {/* <span className="submit-comment" onClick={() => handleConfirmComment()}>Đăng</span> */}
+                  <span className="submit-comment" onClick={() => handleConfirmComment()}>Đăng</span>
                 </div>
-                {/* 
                 {listComments && listComments.length > 0 && listComments.map((item, index) => {
                   return (
                     <div className="d-flex justify-content-center py-2" key={index}>
@@ -482,12 +497,10 @@ function DetailProduct() {
                           <div>
                             <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbnLy2TDFa9Gl29wA4q8nihtL1lDK9iuez6Hn885ePAskQ84QA7ZRsqzg56-cwjJS2VGk&usqp=CAU" width="20" />
                             <span className="text2">{item.User.username}</span>
-                            <span className="text2">Tết</span>
                           </div>
-                          {userInfo && userInfo.account.id === item.userId
+                          {userInfo && userInfo.id === item.userId
                             && (
                               <div>
-                                <span className="text3" >
                                 <span className="text3" onClick={() => handleDeleteComment(item.id)}>
                                   <i className="fa fa-trash" aria-hidden="true"></i>
                                 </span>
@@ -498,7 +511,6 @@ function DetailProduct() {
                     </div>
                   )
                 })}
-                 */}
               </div>
               {totalPages > 0 && (
                 <div className="user-footer mt-3">
@@ -526,7 +538,7 @@ function DetailProduct() {
               )}
             </div>
 
-            {/* <div className="random-product">
+            <div className="random-product">
               <div className="product_rd">
                 <div className="title">
                   <div className="title-name">Sản phẩm có thể bạn quan tâm</div>
@@ -547,10 +559,9 @@ function DetailProduct() {
                           </div>
                           <div className="product-info">
                             <div className="product-title">
-                              {product.product_name}
+                              {product.name}
                             </div>
                             <div className="product-item__price">
-                              <span className="product-item__price-old">{product.old_price}đ</span>
                               <span className="product-item__price-current">
                                 {product.price}đ
                               </span>
@@ -562,7 +573,7 @@ function DetailProduct() {
                   })}
                 </div>
               </div>
-            </div> */}
+            </div>
           </>
         }
       </div>
