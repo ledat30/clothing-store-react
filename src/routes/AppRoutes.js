@@ -8,6 +8,7 @@ import ContactAdmin from "../pages/System/Admin/Contact/Contact";
 // import Statistical from "../pages/System/Statistical/Statistical";
 import Category from "../pages/System/Admin/Category/Category";
 import Product from "../pages/System/Admin/Product/Product";
+import Order from "../pages/System/Admin/Order/Order";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const userInfo = localStorage.getItem("userInfo");
@@ -82,6 +83,14 @@ function AppRoutes({ setIsAuthenticated }) {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Product />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/order"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Order />
               </ProtectedRoute>
             }
           />
