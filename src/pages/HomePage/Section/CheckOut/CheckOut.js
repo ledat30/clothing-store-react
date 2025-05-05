@@ -93,20 +93,20 @@ function CheckOut() {
         return check;
     };
 
-    // useEffect(() => {
-    //     getAllLocationData();
-    // }, []);
+    useEffect(() => {
+        getAllLocationData();
+    }, []);
 
-    // const getAllLocationData = async () => {
-    //     try {
-    //         let response = await getAllProvinceDistrictWard();
-    //         if (response && response.EC === 0) {
-    //             setLocations(response.DT);
-    //         }
-    //     } catch (error) {
-    //         console.error("Error fetching location data:", error);
-    //     }
-    // };
+    const getAllLocationData = async () => {
+        try {
+            let response = await axios.get('http://localhost:3000/api/user/getAllProvinceDistrictWard');;
+            if (response.data && response.data.EC === 0) {
+                setLocations(response.data.DT);
+            }
+        } catch (error) {
+            console.error("Error fetching location data:", error);
+        }
+    };
 
     useEffect(() => {
         if (shippingFee !== undefined) {

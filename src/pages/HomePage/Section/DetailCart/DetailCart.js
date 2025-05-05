@@ -98,57 +98,51 @@ function DetailCart() {
         setIsRelative(prevState => !prevState);
     };
 
-    // useEffect(() => {
-    //     getAllLocationData();
-    // }, []);
+    useEffect(() => {
+        getAllLocationData();
+    }, []);
 
-    // const getAllLocationData = async () => {
-    //     try {
-    //         let response = await getAllProvinceDistrictWard();
-    //         if (response && response.EC === 0) {
-    //             setLocations(response.DT);
-    //         }
-    //     } catch (error) {
-    //         console.error("Error fetching location data:", error);
-    //     }
-    // };
+    const getAllLocationData = async () => {
+        try {
+            let response = await axios.get('http://localhost:3000/api/user/getAllProvinceDistrictWard');;
+            if (response.data && response.data.EC === 0) {
+                setLocations(response.data.DT);
+            }
+        } catch (error) {
+            console.error("Error fetching location data:", error);
+        }
+    };
 
     useEffect(() => {
-        const calculateShippingFee = async () => {
-            try {
-                // tọa độ của địa chỉ nhận hàng 
-                const address = isRelative
-                    ? `${userData.ward?.ward_name}, ${userData.district?.district_name}, ${userData.province?.province_name}`
-                    : `${userInfo.wardName}, ${userInfo.districtName}, ${userInfo.provinceName}`;
-                if (!address) {
-                    throw new Error('Địa chỉ người dùng không tồn tại.');
+            const calculateShippingFee = async () => {
+                try {
+                    const address = isRelative
+                        ? `${userData.ward?.ward_name}, ${userData.district?.district_name}, ${userData.province?.province_name}`
+                        : `${userInfo.wardName}, ${userInfo.districtName}, ${userInfo.provinceName}`;
+                    if (!address) {
+                        throw new Error('Địa chỉ người dùng không tồn tại.');
+                    }
+                    const destinationCoordinates = await geocodeAddress(address);
+    
+                    const storeCoordinates = { lat: 21.024813, lng: 105.988944 };
+    
+                    const distanceInKm = calculateDistance(destinationCoordinates, storeCoordinates);
+                    const roundedDistance = distanceInKm.toFixed(1);
+    
+                    const shippingRatePerKm = 1000;
+    
+                    const shippingTotal = (roundedDistance / 1000) * shippingRatePerKm;
+                    const ship = shippingTotal;
+                    const formattedShip = (ship * 200).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    
+                    setShippingFee(formattedShip);
+    
+                } catch (error) {
+                    console.error('Lỗi khi tính phí vận chuyển:', error);
                 }
-                const destinationCoordinates = await geocodeAddress(address);
-
-                // Tọa độ của cửa hàng 
-                const storeCoordinates = { lat: 21.024813, lng: 105.988944 };
-
-                //  khoảng cách giữa địa chỉ nhận hàng và cửa hàng
-                const distanceInKm = calculateDistance(destinationCoordinates, storeCoordinates);
-                const roundedDistance = distanceInKm.toFixed(1);
-
-                //  công thức phí vận chuyển 
-                const shippingRatePerKm = 1000;
-
-                const shippingTotal = (roundedDistance / 1000) * shippingRatePerKm;
-                const ship = shippingTotal;
-                const formattedShip = (ship * 200).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
-
-                setShippingFee(formattedShip);
-
-            } catch (error) {
-                console.error('Lỗi khi tính phí vận chuyển:', error);
-            }
-        };
-
-        //gọi lại khi thông tin user thay đổi
-        calculateShippingFee();
-    }, [userInfo, userData, isRelative]);
+            };
+            calculateShippingFee();
+        }, [userInfo, userData, isRelative]);
 
     //chuyển đổi địa chỉ thành tọa độ
     const geocodeAddress = async (address) => {
@@ -172,7 +166,6 @@ function DetailCart() {
         }
     };
 
-    // tính khoảng cách giữa hai điểm
     const calculateDistance = (source, destination) => {
         const sourcePoint = point([source.lng, source.lat]);
         const destinationPoint = point([destination.lng, destination.lat]);
@@ -221,10 +214,11 @@ function DetailCart() {
                         }
                     )
                 )
-            );            
+            );     
 
-            const allSuccess = responses.every(response => response.EC === 0);
-            if (allSuccess) {
+            const allSuccessful = responses.every(res => res.data && res.data.EC === 0);
+            
+            if (allSuccessful) {
                 toast.success("All selected items purchased successfully!")
                 setSelectAll(false);
                 setSelectedItems({});

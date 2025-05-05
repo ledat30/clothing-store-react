@@ -32,7 +32,6 @@ function DetailProduct() {
   const [validInputComment, setValidInputComment] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   let navigate = useNavigate();
-  const [inventoryCount, setInventoryCount] = useState(0);
 
   const normalizedAttributes = (dataDetailProduct?.ProductAttributes || []).map(attr => ({
     ...attr,
@@ -252,11 +251,6 @@ function DetailProduct() {
     if (quantily > 1) {
       setQuantily(quantily - 1);
     }
-  };
-
-  const updateInventoryCount = (size, color) => {
-    // const count = getInventory(size, color);
-    // setInventoryCount(count);
   };
 
   const handlePageClick = async (event) => {
