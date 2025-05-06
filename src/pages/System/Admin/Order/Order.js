@@ -57,15 +57,13 @@ function Order() {
     fetchRequests(selectedPage, searchQuery);
   };
 
-  const handleConfirmRequest = async (requestId) => {
+  const handleConfirmRequest = async (id) => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/contact-confirm",
-        {
-          requestId: requestId,
-        }
+        "http://localhost:3000/api/product/confirm-order-by-transfer",
+        { id: id }
       );
-      if (response.data.EC === "0") {
+      if (response.data.EC === 0) {
         toast.success(response.data.EM);
         fetchRequests(currentPage, searchQuery);
       } else {
@@ -143,7 +141,7 @@ function Order() {
                       <button
                         title="Confirm Request"
                         className="btn btn-success me-2"
-                        onClick={() => handleConfirmRequest(request._id)}
+                        onClick={() => handleConfirmRequest(request.id)}
                       >
                         <i className="fa fa-check-circle-o"></i>
                       </button>
