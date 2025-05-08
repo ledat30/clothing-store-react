@@ -223,7 +223,7 @@ function DetailCart() {
                 setSelectAll(false);
                 setSelectedItems({});
                 fetchCartItems(userInfo.id);
-                navigate(`/home`);
+                navigate(`/profile-user`);
             } else {
                 responses.forEach(response => {
                     if (response.EC !== 0) toast.error(response.EM);
