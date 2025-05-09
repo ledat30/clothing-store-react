@@ -29,12 +29,33 @@ function Sidebar(props) {
 
   menuItems.push(
     //admin
-    { to: "/statistical", label: "Statistical", icon: "fa-bar-chart", roles: ["admin"] },
+    {
+      to: "/statistical",
+      label: "Statistical",
+      icon: "fa-bar-chart",
+      roles: ["admin"],
+    },
     { to: "/user", label: "User", icon: "fa-user", roles: ["admin"] },
-    { to: "/category", label: "Category", icon: "fa-bookmark", roles: ["admin"] },
-    { to: "/product", label: "Product", icon: "fa-product-hunt", roles: ["admin"] },
+    {
+      to: "/category",
+      label: "Category",
+      icon: "fa-bookmark",
+      roles: ["admin"],
+    },
+    {
+      to: "/product",
+      label: "Product",
+      icon: "fa-product-hunt",
+      roles: ["admin"],
+    },
     { to: "/order", label: "Order", icon: "fa-cart-plus", roles: ["admin"] },
-    { to: "/contact", label: "Contact", icon: "fa-envelope", roles: ["admin"] },
+    {
+      to: "/comment",
+      label: "Comment",
+      icon: "fa-commenting-o",
+      roles: ["admin"],
+    },
+    { to: "/contact", label: "Contact", icon: "fa-envelope", roles: ["admin"] }
   );
 
   const filteredItems = menuItems.filter(

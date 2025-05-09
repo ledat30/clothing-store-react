@@ -18,7 +18,7 @@ function Profile() {
   const [activeTab, setActiveTab] = useState("orders");
   const contentRef = useRef(null);
   const [listProducts, setListProducts] = useState([]);
-  console.log("listProducts", listProducts);
+  //   console.log("listProducts", listProducts);
   const [currentPage, setCurrentPage] = useState(1);
   const [currentLimit] = useState(5);
   const [totalPages, setTotalPages] = useState(0);
@@ -108,21 +108,26 @@ function Profile() {
   //     }
   //   };
 
-  //   const handleDeleteProduct = async (orderId) => {
-  //     try {
-  //       const response = await cancelOrder(orderId);
-  //       if (response && response.EC === 0) {
-  //         toast.success("Product removed successfully");
-  //         fetchProducts();
-  //       }
-  //       if (response && response.EC === -2) {
-  //         toast.error(response.EM);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error deleting product from cart:", error);
-  //       toast.error("Failed to remove product from cart");
-  //     }
-  //   };
+  const handleDeleteProduct = async (orderId) => {
+    try {
+      let response = await axios.delete(
+        `http://localhost:3000/api/product/cancel-order`,
+        {
+          data: { id: orderId },
+        }
+      );
+      if (response.data && response.data.EC === 0) {
+        toast.success("Product cancel successfully");
+        fetchProducts();
+      }
+      if (response && response.EC === -2) {
+        toast.error(response.EM);
+      }
+    } catch (error) {
+      console.error("Error cancel product :", error);
+      toast.error("Failed to cancel product ");
+    }
+  };
 
   const handleHome = () => {
     navigate("/home");
@@ -162,7 +167,6 @@ function Profile() {
                         style: "currency",
                         currency: "VND",
                       });
-                      console.log("item", item);
 
                       return (
                         <div key={itemIndex} className="product_item">
@@ -238,27 +242,38 @@ function Profile() {
                                   </div>
                                 </>
                               )}
+                              {order.status === "cancel" && (
+                                <>
+                                  <div className="order_status">
+                                    Đã huỷ đơn hàng
+                                  </div>
+                                </>
+                              )}
                             </div>
                           </div>
-                          <div className="cancel">
-                            {order.status === "Processing" ? (
-                              <div>
-                                Bạn muốn huỷ đơn{" "}
-                                <button
-                                  className="btn btn-success"
-                                  //   onClick={() => handleDeleteProduct(order.id)}
-                                >
-                                  <i
-                                    className="fa fa-trash-o"
-                                    aria-hidden="true"
-                                  ></i>{" "}
-                                  Huỷ đơn
-                                </button>
-                              </div>
-                            ) : (
-                              <p>Đơn hàng đã xác nhận không thể huỷ</p>
-                            )}
-                          </div>
+                          {order.status !== "cancel" && (
+                            <div className="cancel">
+                              {order.status === "Processing" ? (
+                                <div>
+                                  Bạn muốn huỷ đơn{" "}
+                                  <button
+                                    className="btn btn-success"
+                                    onClick={() =>
+                                      handleDeleteProduct(order.id)
+                                    }
+                                  >
+                                    <i
+                                      className="fa fa-trash-o"
+                                      aria-hidden="true"
+                                    ></i>{" "}
+                                    Huỷ đơn
+                                  </button>
+                                </div>
+                              ) : (
+                                <p>Đơn hàng đã xác nhận không thể huỷ</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
