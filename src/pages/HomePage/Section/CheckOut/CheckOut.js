@@ -268,6 +268,11 @@ function CheckOut() {
     setIsRelative((prevState) => !prevState);
   };
 
+  const formattedPri = (product.price * 1000).toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  });
+
   return (
     <div className="container-checkout">
       <HeaderHome />
@@ -448,7 +453,7 @@ function CheckOut() {
                   </div>
                 </div>
                 <div className="price">
-                  <div className="price_new">{product.price} đ</div>
+                  <div className="price_new">{formattedPri}</div>
                 </div>
                 <div className="quantity">Số lượng : x {quantily}</div>
               </div>

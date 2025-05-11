@@ -304,6 +304,12 @@ function DetailProduct() {
     }
   }
 
+  
+  const formattedPri = (dataDetailProduct.price * 1000).toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  });
+
   return (
     <div className="container-detail">
       <HeaderHome />
@@ -328,7 +334,7 @@ function DetailProduct() {
                     <span className="view_detail-product">View : {dataDetailProduct.view_count} lượt xem</span>
                   </div>
                   <div className="price">
-                    <span className="current">{dataDetailProduct.price}đ</span>
+                    <span className="current">{formattedPri}</span>
                   </div>
                   <div className="choose-color-size">
                     <div className="size-color">

@@ -241,6 +241,10 @@ function MainHomePage() {
                   <div className="row sm-gutter">
                     {allProducts && allProducts.length > 0 ? (
                       allProducts.map((item, index) => {
+                        const formattedPri = (item.price * 1000).toLocaleString("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        });
                         return (
                           <div className="col l-2-4 m-4 c-6 product-mr" key={index}>
                             <Link to={`/product/${item.id}`} className="home-product-item">
@@ -251,7 +255,7 @@ function MainHomePage() {
                               <h4 className="home-product-item__name">{item.name}</h4>
                               <div className="home-product-item__price">
                                 <span className="home-product-item__price-current">
-                                  {item.price}đ
+                                  {formattedPri}
                                 </span>
                               </div>
                               <div className="home-product-item__new">
