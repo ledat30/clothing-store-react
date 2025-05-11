@@ -86,7 +86,7 @@ function Login(props) {
                 setUserRole(response.data.DT.user.role);
                 const role = response.data.DT.user.role;
                 if (role === "admin") {
-                    navigate("/user");
+                    navigate("/statistical");
                 } else if (role === "customer") {
                     navigate("/home");
                 }

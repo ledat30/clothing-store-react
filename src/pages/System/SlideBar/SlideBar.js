@@ -55,7 +55,7 @@ function Sidebar(props) {
       icon: "fa-commenting-o",
       roles: ["admin"],
     },
-    { to: "/contact", label: "Contact", icon: "fa-envelope", roles: ["admin"] }
+    // { to: "/contact", label: "Contact", icon: "fa-envelope", roles: ["admin"] }
   );
 
   const filteredItems = menuItems.filter(

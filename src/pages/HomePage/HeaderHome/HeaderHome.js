@@ -139,7 +139,7 @@ function HeaderHome() {
             </ul>
             <ul className="header__navbar-list">
               <li className="header__navbar-item" >
-                <Link to={'/contact'} className="header__navbar-item-link">
+                <Link to={'/home'} className="header__navbar-item-link">
                   <i className="header__navbar-icon fa fa-question-circle-o"></i>{" "}
                   Trợ giúp
                 </Link>

@@ -119,8 +119,8 @@ function Order() {
                     <td>{(currentPage - 1) * limit + index + 1}</td>
                     <td>{request.User.username || "Unknown"}</td>
                     <td>
-                      {request.address_detail}, {request.Ward.ward_name},{" "}
-                      {request.District.district_name},{" "}
+                      {request.address_detail ? `${request.address_detail}, ` : ""}
+                      {request.Ward.ward_name}, {request.District.district_name},{" "}
                       {request.Province.province_name}
                     </td>
                     <td>
@@ -184,7 +184,7 @@ function Order() {
                 </div>
                 <div className="col-12 mb-3">
                   <div className="border p-2">
-                    Địa chỉ : {selectedOrder.address_detail},{" "}
+                    Địa chỉ :  {selectedOrder.address_detail ? `${selectedOrder.address_detail}, ` : ""}
                     {selectedOrder.Ward.ward_name},{" "}
                     {selectedOrder.District.district_name},{" "}
                     {selectedOrder.Province.province_name}

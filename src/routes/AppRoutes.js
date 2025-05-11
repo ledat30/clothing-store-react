@@ -5,11 +5,12 @@ import Login from "../pages/System/Admin/Login/login";
 import User from "../pages/System/Admin/User/User";
 import Contact from "../pages/HomePage/Contact/Contact";
 import ContactAdmin from "../pages/System/Admin/Contact/Contact";
-// import Statistical from "../pages/System/Statistical/Statistical";
+import Dashboard from "../pages/System/Admin/Dashboard/Dashboard";
 import Category from "../pages/System/Admin/Category/Category";
 import Product from "../pages/System/Admin/Product/Product";
 import Order from "../pages/System/Admin/Order/Order";
 import Comment from "../pages/System/Admin/Comment/Comment";
+import Revennue from "../pages/System/Admin/Dashboard/Revenue/Revenue";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const userInfo = localStorage.getItem("userInfo");
@@ -55,14 +56,14 @@ function AppRoutes({ setIsAuthenticated }) {
       {/* Admin Routes */}
       {user?.role === "admin" && (
         <>
-          {/* <Route
+          <Route
             path="/statistical"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <Statistical />
+                <Dashboard />
               </ProtectedRoute>
             }
-          /> */}
+          />
           <Route
             path="/user"
             element={
@@ -100,6 +101,14 @@ function AppRoutes({ setIsAuthenticated }) {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Order />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/revenue"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Revennue />
               </ProtectedRoute>
             }
           />
