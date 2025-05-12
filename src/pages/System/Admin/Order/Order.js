@@ -119,15 +119,17 @@ function Order() {
                     <td>{(currentPage - 1) * limit + index + 1}</td>
                     <td>{request.User.username || "Unknown"}</td>
                     <td>
-                      {request.address_detail ? `${request.address_detail}, ` : ""}
-                      {request.Ward.ward_name}, {request.District.district_name},{" "}
-                      {request.Province.province_name}
+                      {request.address_detail
+                        ? `${request.address_detail}, `
+                        : ""}
+                      {request.Ward.ward_name}, {request.District.district_name}
+                      , {request.Province.province_name}
                     </td>
                     <td>
-                      {new Intl.NumberFormat("vi-VN", {
+                      {(request.total_amount * 1000).toLocaleString("vi-VN", {
                         style: "currency",
                         currency: "VND",
-                      }).format(request.total_amount)}
+                      })}
                     </td>
                     <td style={{ color: "red" }}>{"Đang chờ duyệt"}</td>
                     <td>
@@ -184,7 +186,10 @@ function Order() {
                 </div>
                 <div className="col-12 mb-3">
                   <div className="border p-2">
-                    Địa chỉ :  {selectedOrder.address_detail ? `${selectedOrder.address_detail}, ` : ""}
+                    Địa chỉ :{" "}
+                    {selectedOrder.address_detail
+                      ? `${selectedOrder.address_detail}, `
+                      : ""}
                     {selectedOrder.Ward.ward_name},{" "}
                     {selectedOrder.District.district_name},{" "}
                     {selectedOrder.Province.province_name}
@@ -230,10 +235,12 @@ function Order() {
                           {item.ProductAttribute.Product.name}
                         </div>
                         <div className="col-2">
-                          {new Intl.NumberFormat("vi-VN", {
+                          {(
+                            item.ProductAttribute.Product.price * 1000
+                          ).toLocaleString("vi-VN", {
                             style: "currency",
                             currency: "VND",
-                          }).format(item.ProductAttribute.Product.price)}
+                          })}
                         </div>
                         <div className="col-2">
                           {item.ProductAttribute.size} ,{" "}
@@ -248,10 +255,13 @@ function Order() {
                 <div className="col-12">
                   <div className="border p-2 text-end fw-bold">
                     Tổng tiền :{" "}
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(selectedOrder.total_amount)}
+                    {(selectedOrder.total_amount * 1000).toLocaleString(
+                      "vi-VN",
+                      {
+                        style: "currency",
+                        currency: "VND",
+                      }
+                    )}
                   </div>
                   <div
                     style={{
