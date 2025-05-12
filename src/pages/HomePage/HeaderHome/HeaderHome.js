@@ -1,58 +1,49 @@
-import { useContext, useState, useEffect, useRef } from "react";
-import React, { } from "react";
-import { useCart } from '../../../context/cartContext';
+import { useState, useEffect, useRef } from "react";
+import React from "react";
+import { useCart } from "../../../context/cartContext";
 import "./HeaderHome.scss";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-// import { deleteProductCart } from "../../../services/productService";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 import { debounce } from "lodash";
-// const { Buffer } = require("buffer");
 import axios from "axios";
 
 function HeaderHome() {
   const { cartItems, fetchCartItems } = useCart();
   let navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [productResults, setProductResults] = useState([]);
-  const [storeResults, setStoreResults] = useState([]);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [hasSearchResults, setHasSearchResults] = useState(false);
   const searchRef = useRef(null);
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
   const handleSearch = debounce(async () => {
-    if (searchTerm.trim() !== '') {
+    if (searchTerm.trim() !== "") {
       try {
-        const response = await fetch(`http://localhost:8080/api/home/search-home-website?q=${searchTerm}`);
+        const response = await fetch(
+          `http://localhost:3000/api/home/search-home-website?q=${searchTerm}`
+        );
         const result = await response.json();
-        console.log(result);
 
         if (result.EC === 0) {
-          setProductResults(result.DT.productResults);
-          setStoreResults(result.DT.storeResults);
-          setHasSearchResults(
-            result.DT.productResults.length > 0 ||
-            result.DT.storeResults.length > 0
-          );
+          setProductResults(result.DT);
+          setHasSearchResults(result.DT.length > 0);
           setIsSearchVisible(true);
         } else {
-          console.error('Error:', result.EM);
+          console.error("Error:", result.EM);
           setProductResults([]);
-          setStoreResults([]);
           setHasSearchResults(false);
           setIsSearchVisible(false);
         }
       } catch (error) {
-        console.error('Error searching:', error);
+        console.error("Error searching:", error);
         setProductResults([]);
-        setStoreResults([]);
         setHasSearchResults(false);
         setIsSearchVisible(false);
       }
     } else {
       setProductResults([]);
-      setStoreResults([]);
       setHasSearchResults(false);
       setIsSearchVisible(false);
     }
@@ -72,9 +63,9 @@ function HeaderHome() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -85,15 +76,17 @@ function HeaderHome() {
   const handleDeleteProduct = async (productId) => {
     try {
       const response = await axios.delete(
-        `http://localhost:3000/api/product/delete-product-cart`, {
-          data: { id: productId }
-        });
-        
+        `http://localhost:3000/api/product/delete-product-cart`,
+        {
+          data: { id: productId },
+        }
+      );
+
       if (response.data && response.data.EC === 0) {
         fetchCartItems(userInfo.id);
         toast.success("Product removed from cart successfully");
       } else {
-        toast.error(response.EM)
+        toast.error(response.EM);
       }
     } catch (error) {
       console.error("Error deleting product from cart:", error);
@@ -106,8 +99,8 @@ function HeaderHome() {
   };
 
   const handleProfile = () => {
-    navigate('/profile-user');
-  }
+    navigate("/profile-user");
+  };
 
   const handleLogout = async () => {
     try {
@@ -138,8 +131,8 @@ function HeaderHome() {
               </li>
             </ul>
             <ul className="header__navbar-list">
-              <li className="header__navbar-item" >
-                <Link to={'/home'} className="header__navbar-item-link">
+              <li className="header__navbar-item">
+                <Link to={"/home"} className="header__navbar-item-link">
                   <i className="header__navbar-icon fa fa-question-circle-o"></i>{" "}
                   Trợ giúp
                 </Link>
@@ -157,12 +150,18 @@ function HeaderHome() {
                 </span>
 
                 <ul className="header__navbar-user-menu">
-                  <li className="header__navbar-user-item" onClick={handleProfile}>
+                  <li
+                    className="header__navbar-user-item"
+                    onClick={handleProfile}
+                  >
                     <span>Tài khoản của tôi</span>
                   </li>
                   <li
                     className="header__navbar-user-item"
-                    onClick={() => handleLogout()} slideshow__media banner__media media
+                    onClick={() => handleLogout()}
+                    slideshow__media
+                    banner__media
+                    media
                   >
                     <span>Đăng xuất</span>
                   </li>
@@ -234,38 +233,35 @@ function HeaderHome() {
                     )}
                     <ul className="header__search-history-list">
                       {productResults.map((item) => {
-                        let imageBase64 = '';
-                        imageBase64 = new Buffer.from(item.image, 'base64').toString('binary');
                         return (
-                          <li key={item.id} className="header__search-history-item">
+                          <li
+                            key={item.id}
+                            className="header__search-history-item"
+                          >
                             <Link to={`/product/${item.id}`}>
-                              <div style={{ display: 'flex' }}>
-                                <div style={{ backgroundImage: `url(${imageBase64})`, width: '50px', height: '40px', backgroundPosition: "center center", backgroundRepeat: "no-repeat", backgroundSize: 'contain', objectFit: 'cover' }}>
-                                </div>
-                                <span>
-                                  {item.product_name}
-                                </span>
-                              </div>
-                            </Link>
-                          </li>
-                        )
-                      })}
-                      {storeResults.map((item) => {
-                        let image = "";
-                        image = new Buffer.from(item.image, 'base64').toString('binary');
-                        return (
-                          <li key={item.id} className="header__search-history-item">
-                            <Link to={`/product/${item.id}`}>
-                              <div style={{ display: 'flex' }}>
-                                <div style={{ backgroundImage: `url(${image})`, width: '50px', height: '40px', backgroundPosition: "center center", backgroundRepeat: "no-repeat", backgroundSize: 'contain', objectFit: 'cover' }}>
-                                </div>
-                                <span style={{ paddingLeft: '5px' }}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    backgroundImage: `url(${item.image})`,
+                                    width: "50px",
+                                    height: "40px",
+                                    backgroundPosition: "center center",
+                                    backgroundRepeat: "no-repeat",
+                                    backgroundSize: "contain",
+                                    objectFit: "cover",
+                                  }}
+                                ></div>
+                                <span style={{ paddingLeft: "10px" }}>
                                   {item.name}
                                 </span>
                               </div>
                             </Link>
                           </li>
-                        )
+                        );
                       })}
                     </ul>
                     {!hasSearchResults && searchTerm.length > 0 && (
@@ -289,62 +285,92 @@ function HeaderHome() {
                 <i className="header__cart-icon fa fa-shopping-cart"></i>
 
                 <span className="header-cart-notice">
-                  {cartItems.map(product => product.OrderItems.length).reduce((total, count) => total + count, 0)}
+                  {cartItems
+                    .map((product) => product.OrderItems.length)
+                    .reduce((total, count) => total + count, 0)}
                 </span>
 
                 <div className="header__cart-list header__cart-list-co-cart">
-                  {cartItems && cartItems.length > 0 && cartItems[0].OrderItems.length > 0 ? (
+                  {cartItems &&
+                  cartItems.length > 0 &&
+                  cartItems[0].OrderItems.length > 0 ? (
                     <>
                       <h4 className="header__cart-heading">Sản phẩm đã thêm</h4>
-                      {cartItems && cartItems.map((item, index) => {
-                        return (
-                          <ul className="header__cart-list-item" key={index}>
-                            {item.OrderItems.map((orderItem, orderIndex) => {
-                              return (
-                                <li className="header__cart-item" key={orderIndex} >
-                                  <div className="header__cart-img" style={{ backgroundImage: `url(${orderItem.ProductAttribute.Product.image})` }}
-                                  />
-                                  <div className="header__cart-item-info">
-                                    <div className="header__cart-item-head">
-                                      <h5 className="header__cart-item-name">
-                                        {orderItem.ProductAttribute.Product.name}
-                                      </h5>
-                                      <div className="header__cart-item-price-wrap">
-                                        <span className="header__cart-item-price">
-                                          {orderItem.ProductAttribute.Product.price}
+                      {cartItems &&
+                        cartItems.map((item, index) => {
+                          return (
+                            <ul className="header__cart-list-item" key={index}>
+                              {item.OrderItems.map((orderItem, orderIndex) => {
+                                return (
+                                  <li
+                                    className="header__cart-item"
+                                    key={orderIndex}
+                                  >
+                                    <div
+                                      className="header__cart-img"
+                                      style={{
+                                        backgroundImage: `url(${orderItem.ProductAttribute.Product.image})`,
+                                      }}
+                                    />
+                                    <div className="header__cart-item-info">
+                                      <div className="header__cart-item-head">
+                                        <h5 className="header__cart-item-name">
+                                          {
+                                            orderItem.ProductAttribute.Product
+                                              .name
+                                          }
+                                        </h5>
+                                        <div className="header__cart-item-price-wrap">
+                                          <span className="header__cart-item-price">
+                                            {
+                                              orderItem.ProductAttribute.Product
+                                                .price
+                                            }
+                                          </span>
+                                          <span className="header__cart-item-miltiply">
+                                            x
+                                          </span>
+                                          <span className="header__cart-item-qnt">
+                                            {orderItem.quantily}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <div className="header__cart-item-body">
+                                        <span className="header__cart-item-description">
+                                          {
+                                            orderItem.ProductAttribute.Product
+                                              .description
+                                          }
                                         </span>
-                                        <span className="header__cart-item-miltiply">
-                                          x
+                                        <span
+                                          className="header__cart-item-remove"
+                                          onClick={() =>
+                                            handleDeleteProduct(orderItem.id)
+                                          }
+                                        >
+                                          Xoá
                                         </span>
-                                        <span className="header__cart-item-qnt">{orderItem.quantily}</span>
+                                      </div>
+                                      <div>
+                                        <span className="color_size">
+                                          {orderItem.ProductAttribute.color}
+                                        </span>
+                                        <span className="color_size pl-1">
+                                          , {orderItem.ProductAttribute.size}
+                                        </span>
                                       </div>
                                     </div>
-
-                                    <div className="header__cart-item-body">
-                                      <span className="header__cart-item-description">
-                                        {orderItem.ProductAttribute.Product.description}
-                                      </span>
-                                      <span className="header__cart-item-remove"
-                                        onClick={() => handleDeleteProduct(orderItem.id)}
-                                      >
-                                        Xoá
-                                      </span>
-                                    </div>
-                                    <div>
-                                      <span className="color_size">{orderItem.ProductAttribute.color}
-                                      </span>
-                                      <span className="color_size pl-1">
-                                        , {orderItem.ProductAttribute.size}
-                                      </span >
-                                    </div>
-                                  </div>
-                                </li>
-                              )
-                            })}
-                          </ul>
-                        )
-                      })}
-                      <button className="btn-container btn--primary header__cart-view-cart" onClick={handleDetailCart}>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          );
+                        })}
+                      <button
+                        className="btn-container btn--primary header__cart-view-cart"
+                        onClick={handleDetailCart}
+                      >
                         Xem giỏ hàng
                       </button>
                     </>
@@ -387,8 +413,8 @@ function HeaderHome() {
             </a>
           </li>
         </ul>
-      </header >
-    </div >
+      </header>
+    </div>
   );
   // } else {
   return <></>;

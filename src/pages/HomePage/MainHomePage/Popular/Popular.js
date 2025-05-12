@@ -21,7 +21,6 @@ function Popular() {
           params: { limit: currentLimit, page: currentPage },
         }
       );
-      console.log(`response`, response);
 
       if (response.data && response.data.EC === 0) {
         setListSellingProduct(response.data.DT.products);
