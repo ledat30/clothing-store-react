@@ -2,12 +2,11 @@
     .summary {
         background-color: #e6e0e0;
         display         : flex;
-        margin-right    : 45px;
 
         .summary_item {
             background-color: white;
             margin          : 7px;
-            width           : 200px;
+            width           : 235px;
             display         : flex;
             justify-content : space-around;
             cursor          : pointer;
@@ -72,7 +71,7 @@
 
             .search {
                 padding-bottom: 10px;
-                margin-right  : 37px;
+                margin-right  : -8px;
             }
 
             .search1 {

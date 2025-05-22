@@ -130,9 +130,9 @@ function Order() {
           <table>
             <thead>
               <tr>
-                <th style={{ width: "200px" }}>No</th>
-                <th style={{ width: "380px" }}>Date</th>
-                <th style={{ width: "300px" }}>Orders</th>
+                <th >No</th>
+                <th >Date</th>
+                <th>Orders</th>
                 <th>Actions</th>
               </tr>
             </thead>
